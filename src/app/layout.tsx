@@ -13,12 +13,9 @@ import {
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-const merriweatherHeading = Merriweather({
-	subsets: ['latin'],
-	variable: '--font-heading'
-});
+const merriweatherHeading = Merriweather({subsets:['latin'],variable:'--font-heading'});
 
-const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
+const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
 const dmSans = DM_Sans({
 	subsets: ['latin'],
@@ -68,10 +65,8 @@ export default function RootLayout({
 		<html
 			lang="en"
 			className={cn(
-				'font-sans',
-				figtree.variable,
-				merriweatherHeading.variable
-			)}
+        				'font-sans'
+        			, "font-sans", figtree.variable, merriweatherHeading.variable)}
 		>
 			<body className={dmSans.className}>
 				<QueryProvider>

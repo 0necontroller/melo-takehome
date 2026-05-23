@@ -45,9 +45,9 @@ export function LoginForm({
 				</div>
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button variant="outline" asChild className="w-full">
-							<IconBrandGoogle className="mr-2" />
-							Login with Google
+						<Button variant="outline" className="w-full">
+							<IconBrandGoogle className="mr-2" aria-hidden="true" />
+							<span>Login with Google</span>
 						</Button>
 					</TooltipTrigger>
 					<TooltipContent>
