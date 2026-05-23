@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import * as authService from './service';
-import { LoginRequest } from '@/types/api';
-import { UserType } from '@/types/user';
 import { Role } from '@/lib/auth/roles';
+import type { LoginRequest } from '@/types/api';
+import type { UserType } from '@/types/user';
+import * as authService from './service';
 
 interface UseAuthReturn {
 	user: UserType | undefined;

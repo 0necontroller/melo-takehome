@@ -1,6 +1,6 @@
 import { apiBase } from '@/lib/config';
-import { UserType } from '@/types/user';
-import { IServerResponse, LoginRequest } from '@/types/api';
+import type { IServerResponse, LoginRequest } from '@/types/api';
+import type { UserType } from '@/types/user';
 
 export const login = async (data: LoginRequest) => {
 	const response = await apiBase.post<
