@@ -1,8 +1,10 @@
 'use client';
 
-import { Sparkles, LogOut, History } from 'lucide-react';
+import { LogOut, History } from 'lucide-react';
 import { useAuth } from '@/hooks/query/auth/useAuth';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { GitHub } from '../icons/github';
 
 interface DashboardNavbarProps {
 	historyCount?: number;
@@ -17,7 +19,7 @@ export function DashboardNavbar({
 
 	return (
 		<header className="sticky top-0 z-10 border-b border-[#e8e4df] bg-white/80 backdrop-blur-sm">
-			<div className="mx-auto flex max-w-4xl items-center px-6 py-4">
+			<div className="mx-auto flex max-w-5xl items-center px-6 py-4">
 				<div className="flex flex-1 items-center gap-3">
 					<span className="text-xl font-semibold tracking-tight">
 						InterviewAI
@@ -54,6 +56,14 @@ export function DashboardNavbar({
 						<LogOut className="h-4 w-4" />
 						<span>Logout</span>
 					</Button>
+
+					<div className="mx-1 h-4 w-px bg-[#e8e4df]" />
+					<Link
+						href="https://github.com/0necontroller/melo-takehome"
+						target="_blank"
+					>
+						<GitHub  className='h-6 w-6 text-muted-foreground'/>
+					</Link>
 				</div>
 			</div>
 		</header>

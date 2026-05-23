@@ -107,7 +107,7 @@ export default function Dashboard() {
 				onRestore={handleRestore}
 			/>
 
-			<main className="mx-auto max-w-4xl px-6 py-16">
+			<main className="mx-auto max-w-5xl px-6 py-16">
 				{/* Hero */}
 				<motion.div
 					className="mb-14 text-center"
