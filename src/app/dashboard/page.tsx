@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import {
-	Send,
-	RotateCcw,
-	CheckCircle2,
-	Lightbulb,
-	ChevronDown,
-} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Send, RotateCcw, Sparkles } from 'lucide-react';
 import { DashboardNavbar } from '@/components/dashboard/DashboardNavbar';
+import { InterviewQuestionCard } from '@/components/dashboard/InterviewQuestionCard';
+import { HistorySheet } from '@/components/dashboard/HistorySheet';
+import { Button } from '@/components/ui/button';
 import { useGenerateInterviewQuestions } from '@/hooks/query/interview/useInterviewQuestions';
+import { useInterviewHistory } from '@/hooks/useInterviewHistory';
 import type { InterviewQuestion } from '@/hooks/query/interview/useInterviewQuestions';
 
 const EXAMPLE_ROLES = [
@@ -22,9 +21,11 @@ const EXAMPLE_ROLES = [
 
 export default function Dashboard() {
 	const [jobTitle, setJobTitle] = useState('');
-	const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>(
-		{}
-	);
+	const [historyOpen, setHistoryOpen] = useState(false);
+	const [restoredQuestions, setRestoredQuestions] = useState<
+		InterviewQuestion[] | null
+	>(null);
+	const [restoredTitle, setRestoredTitle] = useState('');
 	const resultsRef = useRef<HTMLDivElement>(null);
 
 	const {
@@ -35,22 +36,24 @@ export default function Dashboard() {
 		reset
 	} = useGenerateInterviewQuestions();
 
-	const questions: InterviewQuestion[] = data?.questions ?? [];
+	const { history, addEntry, removeEntry, clearAll } = useInterviewHistory();
+
+	// Show restored result or freshly generated result
+	const activeQuestions: InterviewQuestion[] =
+		restoredQuestions ?? data?.questions ?? [];
+	const activeTitle = restoredQuestions ? restoredTitle : jobTitle;
 
 	const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!jobTitle.trim() || isLoading) return;
 
-		setExpandedCards({});
+		// Clear any restored state
+		setRestoredQuestions(null);
+		setRestoredTitle('');
 
 		generateQuestions(jobTitle.trim(), {
 			onSuccess: (result) => {
-				// Expand all cards by default
-				const expanded: Record<number, boolean> = {};
-				result.questions.forEach((_, i) => {
-					expanded[i] = true;
-				});
-				setExpandedCards(expanded);
+				addEntry(jobTitle.trim(), result.questions);
 
 				setTimeout(() => {
 					resultsRef.current?.scrollIntoView({
@@ -62,27 +65,56 @@ export default function Dashboard() {
 		});
 	};
 
-	const handleRoleClick = (role: string) => {
-		setJobTitle(role);
-	};
-
 	const handleReset = () => {
 		reset();
 		setJobTitle('');
-		setExpandedCards({});
+		setRestoredQuestions(null);
+		setRestoredTitle('');
 	};
 
-	const toggleCard = (index: number) => {
-		setExpandedCards((prev) => ({ ...prev, [index]: !prev[index] }));
+	const handleRoleSelect = (role: string) => {
+		setJobTitle(role);
+		reset();
+		setRestoredQuestions(null);
+		setRestoredTitle('');
+	};
+
+	const handleRestore = (title: string, questions: InterviewQuestion[]) => {
+		setRestoredQuestions(questions);
+		setRestoredTitle(title);
+		setJobTitle(title);
+		setTimeout(() => {
+			resultsRef.current?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+		}, 100);
 	};
 
 	return (
 		<div className="min-h-screen bg-[#fafaf8]">
-			<DashboardNavbar />
+			<DashboardNavbar
+				historyCount={history.length}
+				onHistoryClick={() => setHistoryOpen(true)}
+			/>
+
+			<HistorySheet
+				open={historyOpen}
+				onOpenChange={setHistoryOpen}
+				history={history}
+				onRemove={removeEntry}
+				onClearAll={clearAll}
+				onRestore={handleRestore}
+			/>
 
 			<main className="mx-auto max-w-4xl px-6 py-16">
 				{/* Hero */}
-				<div className="mb-14 text-center">
+				<motion.div
+					className="mb-14 text-center"
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5, ease: 'easeOut' }}
+				>
 					<h1 className="mb-4 text-4xl leading-tight font-bold tracking-tight text-[#1a1a1a] sm:text-5xl">
 						Generate thoughtful
 						<br />
@@ -92,12 +124,17 @@ export default function Dashboard() {
 					</h1>
 					<p className="mx-auto max-w-xl text-lg leading-relaxed text-[#6b5f54]">
 						Enter any job title and get 3 role-specific interview questions with
-						detailed evaluation criteria — powered by Google Gemini Flash.
+						detailed evaluation criteria powered by AI.
 					</p>
-				</div>
+				</motion.div>
 
 				{/* Input Form */}
-				<div className="mb-6 rounded-2xl border border-[#e8e4df] bg-white p-8 shadow-sm">
+				<motion.div
+					className="mb-6 rounded-2xl border border-[#e8e4df] bg-white p-8 shadow-sm"
+					initial={{ opacity: 0, y: 16 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.45, delay: 0.1, ease: 'easeOut' }}
+				>
 					<form onSubmit={handleSubmit} className="space-y-6">
 						<div>
 							<label
@@ -116,18 +153,19 @@ export default function Dashboard() {
 									disabled={isLoading}
 									className="w-full rounded-xl border-2 border-[#e8e4df] bg-[#fafaf8] px-5 py-4 pr-14 text-lg font-medium text-[#1a1a1a] placeholder-[#b5a99a] transition-all duration-200 focus:border-emerald-400 focus:bg-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 								/>
-								<button
+								<Button
 									type="submit"
 									disabled={!jobTitle.trim() || isLoading}
 									id="generate-questions-btn"
-									className="group absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg bg-emerald-500 shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow disabled:cursor-not-allowed disabled:bg-[#d9d3cc]"
+									size="icon-lg"
+									className="group absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center rounded-lg bg-emerald-500 shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow disabled:cursor-not-allowed disabled:bg-[#d9d3cc]"
 								>
 									{isLoading ? (
 										<div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
 									) : (
 										<Send className="h-4 w-4 text-white transition-transform group-hover:translate-x-0.5" />
 									)}
-								</button>
+								</Button>
 							</div>
 						</div>
 
@@ -138,146 +176,100 @@ export default function Dashboard() {
 							</p>
 							<div className="flex flex-wrap gap-2">
 								{EXAMPLE_ROLES.map((role) => (
-									<button
+									<Button
 										key={role}
 										type="button"
+										variant="outline"
+										size="sm"
 										id={`role-chip-${role.replace(/\s+/g, '-').toLowerCase()}`}
-										onClick={() => handleRoleClick(role)}
+										onClick={() => handleRoleSelect(role)}
 										disabled={isLoading}
-										className="rounded-lg border border-[#e0dbd5] px-3 py-1.5 text-sm font-medium text-[#5a4d42] transition-all duration-150 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
+										className="h-auto rounded-lg border border-[#e0dbd5] px-3 py-1.5 text-sm font-medium text-[#5a4d42] transition-all duration-150 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
 									>
 										{role}
-									</button>
+									</Button>
 								))}
 							</div>
 						</div>
 
 						{/* Loading feedback */}
-						{isLoading && (
-							<div className="flex items-center gap-3 rounded-xl bg-[#f5f1ec] px-4 py-3 text-sm text-[#6b5f54]">
-								<div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
-								<span>
-									Generating questions for{' '}
-									<strong className="text-[#1a1a1a]">{jobTitle}</strong> — this
-									takes a few seconds…
-								</span>
-							</div>
-						)}
-					</form>
-				</div>
-
-				{/* Error state */}
-				{error && (
-					<div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-						{error.message}
-					</div>
-				)}
-
-				{/* Results */}
-				{questions.length > 0 && (
-					<div ref={resultsRef} className="space-y-4">
-						<div className="mb-6 flex items-center justify-between">
-							<div>
-								<h2 className="text-xl font-bold text-[#1a1a1a]">
-									Interview Questions
-								</h2>
-								<p className="mt-0.5 text-sm text-[#8b7d6b]">
-									For{' '}
-									<span className="font-semibold text-emerald-700">
-										{jobTitle}
-									</span>
-								</p>
-							</div>
-							<button
-								type="button"
-								onClick={handleReset}
-								id="reset-btn"
-								className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#8b7d6b] transition-all duration-150 hover:bg-[#f0ece6] hover:text-[#1a1a1a]"
-							>
-								<RotateCcw className="h-3.5 w-3.5" />
-								Start over
-							</button>
-						</div>
-
-						{questions.map((q, index) => (
-							<div
-								key={index}
-								id={`question-card-${index + 1}`}
-								className="overflow-hidden rounded-2xl border border-[#e8e4df] bg-white shadow-sm"
-								style={{
-									animationDelay: `${index * 100}ms`,
-									animation: 'fadeSlideIn 0.4s ease forwards'
-								}}
-							>
-								{/* Question header — acts as expand toggle */}
-								<button
-									type="button"
-									onClick={() => toggleCard(index)}
-									className="flex w-full items-start gap-4 px-7 py-6 text-left transition-colors duration-150 hover:bg-[#fafaf8]"
+						<AnimatePresence>
+							{isLoading && (
+								<motion.div
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: 'auto' }}
+									exit={{ opacity: 0, height: 0 }}
+									className="overflow-hidden"
 								>
-									<div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 shadow-sm">
-										<span className="text-xs font-bold text-white">
-											{index + 1}
+									<div className="flex items-center gap-3 rounded-xl bg-[#f5f1ec] px-4 py-3 text-sm text-[#6b5f54]">
+										<div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+										<span>
+											Generating questions for{' '}
+											<strong className="text-[#1a1a1a]">{jobTitle}</strong> —
+											this takes a few seconds…
 										</span>
 									</div>
-									<div className="min-w-0 flex-1">
-										<p className="text-[15px] leading-snug font-semibold text-[#1a1a1a]">
-											{q.question}
-										</p>
-										{q.purpose && (
-											<p className="mt-1.5 flex items-center gap-1.5 text-sm text-[#8b7d6b]">
-												<Lightbulb className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-												{q.purpose}
-											</p>
-										)}
-									</div>
-									<ChevronDown
-										className={`mt-1 h-4 w-4 shrink-0 text-[#a09183] transition-transform duration-200 ${
-											expandedCards[index] ? 'rotate-180' : ''
-										}`}
-									/>
-								</button>
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</form>
+				</motion.div>
 
-								{/* Evaluation criteria */}
-								{expandedCards[index] && (
-									<div className="border-t border-[#f0ece6] px-7 pb-6">
-										<p className="mt-5 mb-3 text-xs font-semibold tracking-wider text-[#a09183] uppercase">
-											What to look for
-										</p>
-										<ul className="space-y-2.5">
-											{q.lookFor.map((item, i) => (
-												<li key={i} className="flex items-start gap-3">
-													<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-													<span className="text-sm leading-relaxed text-[#4a3f36]">
-														{item}
-													</span>
-												</li>
-											))}
-										</ul>
-									</div>
-								)}
+				{/* Error state */}
+				<AnimatePresence>
+					{error && (
+						<motion.div
+							initial={{ opacity: 0, y: -8 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -8 }}
+							className="mb-6 rounded-xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700"
+						>
+							{error.message}
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Results */}
+				<AnimatePresence>
+					{activeQuestions.length > 0 && (
+						<motion.div
+							ref={resultsRef}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							className="space-y-4"
+						>
+							<div className="mb-6 flex items-center justify-between">
+								<div>
+									<h2 className="text-xl font-bold text-[#1a1a1a]">
+										Interview Questions
+									</h2>
+									<p className="mt-0.5 text-sm text-[#8b7d6b]">
+										For{' '}
+										<span className="font-semibold text-emerald-700">
+											{activeTitle}
+										</span>
+									</p>
+								</div>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={handleReset}
+									id="reset-btn"
+									className="flex h-auto items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#8b7d6b] transition-all duration-150 hover:bg-[#f0ece6] hover:text-[#1a1a1a]"
+								>
+									<RotateCcw className="h-3.5 w-3.5" />
+									Start over
+								</Button>
 							</div>
-						))}
 
-						<p className="mt-6 pb-4 text-center text-xs text-[#b5a99a]">
-							Generated with Google Gemini Flash · Results may vary
-						</p>
-					</div>
-				)}
+							{activeQuestions.map((q, index) => (
+								<InterviewQuestionCard key={index} question={q} index={index} />
+							))}
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</main>
-
-			<style jsx>{`
-				@keyframes fadeSlideIn {
-					from {
-						opacity: 0;
-						transform: translateY(12px);
-					}
-					to {
-						opacity: 1;
-						transform: translateY(0);
-					}
-				}
-			`}</style>
 		</div>
 	);
 }
