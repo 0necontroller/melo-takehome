@@ -25,14 +25,28 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-	title: 'Your wesite title | Goes here for now',
-	description: 'This is a custom description for your website',
-	metadataBase: new URL('https://yourwebsite.com'),
+	title: {
+		default: 'InterviewAI — Generate Interview Questions with Gemini',
+		template: '%s | InterviewAI'
+	},
+	description:
+		'InterviewAI generates tailored, role-specific interview questions and evaluation criteria in seconds — powered by Google Gemini Flash.',
+	metadataBase: new URL('https://interviewai.app'),
 	openGraph: {
 		type: 'website',
 		locale: 'en_US',
 		url: '/',
-		images: '/opengraph-image.png' // TODO: Update extension for your image
+		siteName: 'InterviewAI',
+		title: 'InterviewAI — Generate Interview Questions with Gemini',
+		description:
+			'Get 3 thoughtful, role-specific interview questions with detailed evaluation criteria — powered by Google Gemini Flash.',
+		images: '/opengraph-image.png'
+	},
+	twitter: {
+		card: 'summary_large_image',
+		title: 'InterviewAI — Generate Interview Questions with Gemini',
+		description:
+			'Get 3 thoughtful, role-specific interview questions with detailed evaluation criteria — powered by Google Gemini Flash.'
 	},
 	robots: {
 		index: true,
@@ -47,8 +61,18 @@ export const metadata: Metadata = {
 			'max-snippet': -1
 		}
 	},
-	keywords: ['Add', 'your', 'keywords', 'here'],
-	category: 'Add your category here'
+	keywords: [
+		'interview questions',
+		'AI interview prep',
+		'hiring manager tools',
+		'interview generator',
+		'Gemini AI',
+		'HR tools',
+		'competency-based interviewing',
+		'behavioral interview questions',
+		'recruiting tools'
+	],
+	category: 'Productivity'
 };
 export const viewport: Viewport = {
 	width: 'device-width',

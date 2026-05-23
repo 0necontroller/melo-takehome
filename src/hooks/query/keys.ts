@@ -7,5 +7,8 @@ export const queryKeys = {
 		me: ['user', 'me'] as const,
 		all: ['user', 'all'] as const,
 		search: (query: string) => ['user', 'search', query] as const
+	},
+	interview: {
+		questions: (jobTitle: string) => ['interview', 'questions', jobTitle] as const
 	}
 };
