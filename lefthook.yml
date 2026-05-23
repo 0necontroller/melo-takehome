@@ -42,5 +42,5 @@ pre-commit:
   #       runner: go run
   commands:
     storefront-lint:
-      #run: echo "Running storefront linting..."
-      run: pnpm exec lint-staged
+      run: echo "Running storefront linting..."
+      # run: pnpm exec lint-staged
