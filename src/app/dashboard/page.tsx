@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, RotateCcw, Sparkles } from 'lucide-react';
+import { Send, RotateCcw } from 'lucide-react';
 import { DashboardNavbar } from '@/components/dashboard/DashboardNavbar';
 import { InterviewQuestionCard } from '@/components/dashboard/InterviewQuestionCard';
 import { HistorySheet } from '@/components/dashboard/HistorySheet';

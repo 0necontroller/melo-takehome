@@ -11,7 +11,7 @@ export interface GenerateQuestionsResponse {
 export const generateInterviewQuestions = async (
 	jobTitle: string
 ): Promise<GenerateQuestionsResponse> => {
-	const response = await fetch('/api/interview-questions', {
+	const response = await fetch('/api/v1/interview-questions', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ jobTitle })
