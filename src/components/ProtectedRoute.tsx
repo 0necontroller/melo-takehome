@@ -1,0 +1,93 @@
+'use client';
+
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from '@/hooks/query/auth/useAuth';
+import { UserRole } from '@/lib/auth/roles';
+
+interface ProtectedRouteProps {
+	children: React.ReactNode;
+	allowedRoles?: UserRole[];
+	fallbackPath?: string;
+}
+
+/**
+ * Component that protects routes based on authentication and role
+ * Redirects to login if not authenticated
+ * Shows 403 or redirects if user doesn't have required role
+ */
+export function ProtectedRoute({
+	children,
+	allowedRoles,
+	fallbackPath = '/'
+}: ProtectedRouteProps) {
+	const router = useRouter();
+	const pathname = usePathname();
+	const { user, isLoading, isAuthenticated } = useAuth();
+
+	useEffect(() => {
+		// Don't redirect while loading
+		if (isLoading) return;
+
+		// Redirect to login if not authenticated
+		if (!isAuthenticated) {
+			// Store intended destination for redirect after login
+			const returnUrl = encodeURIComponent(pathname);
+			router.push(`${fallbackPath}?returnUrl=${returnUrl}`);
+			return;
+		}
+
+		// Check role-based access if roles specified
+		if (allowedRoles && allowedRoles.length > 0 && user) {
+			const hasAccess = allowedRoles.includes(user.role as UserRole);
+
+			if (!hasAccess && user.role === UserRole.USER) {
+				router.push('/dashboard');
+			}
+		}
+	}, [
+		isLoading,
+		isAuthenticated,
+		user,
+		allowedRoles,
+		router,
+		pathname,
+		fallbackPath
+	]);
+
+	// Show loading state
+	if (isLoading) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<div className="flex flex-col items-center gap-4">
+					<div className="border-primary h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
+				</div>
+			</div>
+		);
+	}
+
+	// Don't render children if not authenticated
+	if (!isAuthenticated) {
+		return null;
+	}
+
+	// Don't render children if role check fails
+	if (allowedRoles && allowedRoles.length > 0 && user) {
+		const hasAccess = allowedRoles.includes(user.role as UserRole);
+		if (!hasAccess) {
+			return (
+				<div className="flex h-screen items-center justify-center">
+					<div className="text-center">
+						<h1 className="text-4xl font-bold">403</h1>
+						<p className="text-muted-foreground">Access Denied</p>
+						<p className="text-muted-foreground mt-2 text-sm">
+							You don't have permission to access this page.
+						</p>
+					</div>
+				</div>
+			);
+		}
+	}
+
+	return <>{children}</>;
+}

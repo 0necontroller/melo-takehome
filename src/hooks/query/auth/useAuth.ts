@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { UserRole } from '@/lib/auth/roles';
+import type { LoginRequest } from '@/types/api';
+import type { UserType } from '@/types/user';
 import * as authService from './service';
-import { LoginRequest } from '@/types/api';
-import { UserType } from '@/types/user';
-import { Role } from '@/lib/auth/roles';
 
 interface UseAuthReturn {
 	user: UserType | undefined;
@@ -13,7 +13,7 @@ interface UseAuthReturn {
 	isAuthenticated: boolean;
 	login: (credentials: LoginRequest) => Promise<void>;
 	logout: () => Promise<void>;
-	hasRole: (role: Role) => boolean;
+	hasUserRole: (UserRole: UserRole) => boolean;
 	refetchUser: () => void;
 }
 
@@ -56,9 +56,9 @@ export function useAuth(): UseAuthReturn {
 			if (response.data) {
 				queryClient.setQueryData(['auth', 'user'], response.data.user);
 
-				// Redirect based on role
-				const userRole = response.data.user.role;
-				if (userRole === Role.SYSADMIN) {
+				// Redirect based on UserRole
+				const userUserRole = response.data.user.role;
+				if (userUserRole === UserRole.SYSADMIN) {
 					router.push('/admin');
 				} else {
 					router.push('/dashboard');
@@ -89,10 +89,10 @@ export function useAuth(): UseAuthReturn {
 		}
 	});
 
-	// Helper to check if user has a specific role
-	const hasRole = (role: Role): boolean => {
+	// Helper to check if user has a specific UserRole
+	const hasUserRole = (UserRole: UserRole): boolean => {
 		if (!user) return false;
-		return user.role === role;
+		return user.role === UserRole;
 	};
 
 	// Wrapper functions
@@ -110,7 +110,7 @@ export function useAuth(): UseAuthReturn {
 		isAuthenticated: !!user,
 		login,
 		logout,
-		hasRole,
+		hasUserRole,
 		refetchUser
 	};
 }
