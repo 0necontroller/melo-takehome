@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Role } from '@/lib/auth/roles';
+import { UserRole } from '@/lib/auth/roles';
 import { ENV } from '@/lib/environments';
 import type { IServerResponse, LoginRequest } from '@/types/api';
 import type { UserType } from '@/types/user';
@@ -13,7 +13,7 @@ const buildUser = (email: string): UserType => {
 		id: 'user_1',
 		email,
 		name,
-		role: Role.USER
+		role: UserRole.USER
 	};
 };
 

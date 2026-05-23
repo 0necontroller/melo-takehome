@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { Role } from '@/lib/auth/roles';
+import { UserRole } from '@/lib/auth/roles';
 import { ENV } from '@/lib/environments';
 import type { IServerResponse } from '@/types/api';
 import type { UserType } from '@/types/user';
@@ -14,12 +14,14 @@ const buildUser = (email: string): UserType => {
 		id: 'user_1',
 		email,
 		name,
-		role: Role.USER
+		role: UserRole.USER
 	};
 };
 
 export async function GET() {
-	const authCookie = cookies().get(AUTH_COOKIE);
+	const cookieStore = await cookies();
+	const authCookie = cookieStore.get(AUTH_COOKIE);
+
 	if (!authCookie || authCookie.value !== '1') {
 		const body: IServerResponse<null> = {
 			success: false,

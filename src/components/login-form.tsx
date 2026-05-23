@@ -88,7 +88,7 @@ export function LoginForm({
 					/>
 				</div>
 				{errorMessage ? (
-					<p className="text-sm text-destructive" aria-live="polite">
+					<p className="text-destructive text-sm" aria-live="polite">
 						{errorMessage}
 					</p>
 				) : null}
