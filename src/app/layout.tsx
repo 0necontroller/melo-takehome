@@ -1,5 +1,5 @@
 import './globals.css';
-import { DM_Sans } from 'next/font/google';
+import { DM_Sans, Figtree, Merriweather } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
 import { QueryProvider } from '@/hooks/query/query-provider';
 import { Toaster } from 'sonner';
@@ -10,6 +10,13 @@ import {
 	IconLoader2,
 	IconX
 } from '@tabler/icons-react';
+import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@/components/ui/tooltip';
+
+const merriweatherHeading = Merriweather({subsets:['latin'],variable:'--font-heading'});
+
+const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+
 const dmSans = DM_Sans({
 	subsets: ['latin'],
 	display: 'swap',
@@ -55,9 +62,16 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			className={cn(
+        				'font-sans'
+        			, "font-sans", figtree.variable, merriweatherHeading.variable)}
+		>
 			<body className={dmSans.className}>
-				<QueryProvider>{children}</QueryProvider>
+				<QueryProvider>
+					<TooltipProvider>{children}</TooltipProvider>
+				</QueryProvider>
 				<Toaster
 					position="top-center"
 					richColors
