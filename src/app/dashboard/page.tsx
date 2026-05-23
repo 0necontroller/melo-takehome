@@ -7,7 +7,6 @@ import {
 	CheckCircle2,
 	Lightbulb,
 	ChevronDown,
-	Sparkles
 } from 'lucide-react';
 import { DashboardNavbar } from '@/components/dashboard/DashboardNavbar';
 import { useGenerateInterviewQuestions } from '@/hooks/query/interview/useInterviewQuestions';
@@ -38,7 +37,7 @@ export default function Dashboard() {
 
 	const questions: InterviewQuestion[] = data?.questions ?? [];
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!jobTitle.trim() || isLoading) return;
 
