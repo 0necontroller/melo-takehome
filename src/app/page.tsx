@@ -1,7 +1,6 @@
-import { GalleryVerticalEnd } from 'lucide-react';
+import { IconStarHalf } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
 import { LoginForm } from '@/components/login-form';
 
 export default function LoginPage() {
@@ -11,9 +10,9 @@ export default function LoginPage() {
 				<div className="flex justify-center gap-2 md:justify-start">
 					<Link href="/" className="flex items-center gap-2 font-medium">
 						<div className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-md">
-							<GalleryVerticalEnd className="size-4" />
+							<IconStarHalf className="size-4" />
 						</div>
-						Acme Inc.
+						InterviewAI
 					</Link>
 				</div>
 				<div className="flex flex-1 items-center justify-center">
